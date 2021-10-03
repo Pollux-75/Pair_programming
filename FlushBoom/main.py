@@ -576,6 +576,8 @@ def local_match():
     show_situation(1)
     while len(deck) != 0:
         for event in pygame.event.get():
+            if len(deck) == 0:
+                break
             if event.type == pygame.MOUSEMOTION:
                 continue  # 是鼠标移动事件则跳到下一个事件
 
