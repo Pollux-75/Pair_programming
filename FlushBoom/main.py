@@ -469,99 +469,106 @@ def local_match():
         # 展示当前场上的情况
         screen.blit(background, (0, 0))  # 插入背景
         screen.blit(button_return, (872, -7))  # 插入返回按钮
+        screen.blit(tag_gamer_A, (110, 502))  # 玩家A标牌
+        screen.blit(tag_gamer_B, (110, 10))  # 玩家B标牌
         if turn == 0:
-            screen.blit(tag_gamer_A, (190, 419))  # 玩家A标牌
-            screen.blit(tag_gamer_B, (190, 5))  # 玩家B标牌
-            screen.blit(tag_A_turn, (469, 211))  # A的回合
+            screen.blit(tag_A_turn, (467, 248))  # A的回合
         else:
-            screen.blit(tag_gamer_A, (190, 5))  # 玩家A标牌
-            screen.blit(tag_gamer_B, (190, 419))  # 玩家B标牌
-            screen.blit(tag_B_turn, (469, 211))  # B的回合
-        screen.blit(tag_cards_in_hand, (190, 472))  # 手牌区
-        screen.blit(tag_deck, (303, 190))  # 牌堆区
-        screen.blit(tag_deck_sign, (338, 392))  # 牌堆区标志
-        screen.blit(tag_deck_amount, (337, 155))  # 牌堆区数量
-        screen.blit(tag_placement_area, (628, 190))  # 放置区
-        screen.blit(tag_placement_area_amount, (662, 153))  # 放置区数量
-        screen.blit(tag_placement_area_sign, (663, 392))  # 放置区标志
-        screen.blit(tag_S_amount, (252, 478))  # A-黑桃数量标牌
-        screen.blit(tag_H_amount, (414, 478))  # A-红心数量标牌
-        screen.blit(tag_C_amount, (577, 478))  # A-梅花数量标牌
-        screen.blit(tag_D_amount, (739, 478))  # A-方块数量标牌
+            screen.blit(tag_B_turn, (467, 248))  # B的回合
+        screen.blit(tag_cards_in_hand, (215, 502))  # A的手牌区
+        screen.blit(tag_cards_in_hand, (215, 11))  # B的手牌区
+        screen.blit(tag_deck, (303, 266))  # 牌堆区
+        screen.blit(tag_deck_sign, (338, 468))  # 牌堆区标志
+        screen.blit(tag_deck_amount, (337, 231))  # 牌堆区数量
+        screen.blit(tag_placement_area, (628, 266))  # 放置区
+        screen.blit(tag_placement_area_amount, (662, 229))  # 放置区数量
+        screen.blit(tag_placement_area_sign, (663, 468))  # 放置区标志
+        screen.blit(tag_S_amount, (252, 512))  # A-黑桃数量标牌
+        screen.blit(tag_H_amount, (414, 512))  # A-红心数量标牌
+        screen.blit(tag_C_amount, (577, 512))  # A-梅花数量标牌
+        screen.blit(tag_D_amount, (739, 512))  # A-方块数量标牌
 
-        screen.blit(tag_S_amount, (252, 60))  # B-黑桃数量标牌
-        screen.blit(tag_H_amount, (414, 60))  # B-红心数量标牌
-        screen.blit(tag_C_amount, (577, 60))  # B-梅花数量标牌
-        screen.blit(tag_D_amount, (739, 60))  # B-方块数量标牌
+        screen.blit(tag_S_amount, (252, 21))  # B-黑桃数量标牌
+        screen.blit(tag_H_amount, (414, 21))  # B-红心数量标牌
+        screen.blit(tag_C_amount, (577, 21))  # B-梅花数量标牌
+        screen.blit(tag_D_amount, (739, 21))  # B-方块数量标牌
 
         # 展示牌堆
         if len(deck) > 0:
-            screen.blit(card_back, (326, 213))  # 牌堆顶是卡牌背面（即不展示）
+            screen.blit(card_back, (327, 287))  # 牌堆顶是卡牌背面（即不展示）
         # 展示放置区
         if not placement_area.is_empty():
-            screen.blit(placement_area.peek().card_image, (651, 213))
+            screen.blit(placement_area.peek().card_image, (651, 289))
         # 展示手牌
-        for iii in range(turn * 4 + 0, turn * 4 + 4):
+        for iii in range(0, 8):
             if not cards_in_hand[iii].is_empty():
                 if iii % 4 == 0:
-                    screen.blit(cards_in_hand[iii].peek().card_image, (244, 521))
+                    if iii < 4:
+                        screen.blit(cards_in_hand[iii].peek().card_image, (244, 555))
+                    else:
+                        screen.blit(cards_in_hand[iii].peek().card_image, (244, 64))
                 elif iii % 4 == 1:
-                    screen.blit(cards_in_hand[iii].peek().card_image, (406, 521))
+                    if iii < 4:
+                        screen.blit(cards_in_hand[iii].peek().card_image, (406, 555))
+                    else:
+                        screen.blit(cards_in_hand[iii].peek().card_image, (406, 64))
                 elif iii % 4 == 2:
-                    screen.blit(cards_in_hand[iii].peek().card_image, (569, 521))
+                    if iii < 4:
+                        screen.blit(cards_in_hand[iii].peek().card_image, (569, 555))
+                    else:
+                        screen.blit(cards_in_hand[iii].peek().card_image, (569, 64))
                 elif iii % 4 == 3:
-                    screen.blit(cards_in_hand[iii].peek().card_image, (731, 521))
+                    if iii < 4:
+                        screen.blit(cards_in_hand[iii].peek().card_image, (731, 555))
+                    else:
+                        screen.blit(cards_in_hand[iii].peek().card_image, (731, 64))
         # 展示当前状况（1：等待出牌，2：安全出排，3：同花BOOM，4：牌堆出牌，5：手牌出牌）
         if situation_type == 1:
-            screen.blit(tag_wait_play, (469, 290))  # 等待出牌
+            screen.blit(tag_wait_play, (467, 327))  # 等待出牌
         elif situation_type == 2:
-            screen.blit(tag_safe_play, (469, 290))  # 安全出排
+            screen.blit(tag_safe_play, (467, 327))  # 安全出排
         elif situation_type == 3:
-            screen.blit(tag_flush_boom, (469, 290))  # 同花BOOM
+            screen.blit(tag_flush_boom, (467, 327))  # 同花BOOM
         elif situation_type == 4:
             # screen.blit(tag_from_deck, (469, 290))  # 牌堆出牌
-            screen.blit(tag_wait_play, (469, 290))  # 等待出牌
+            screen.blit(tag_wait_play, (467, 327))  # 等待出牌
         elif situation_type == 5:
             # screen.blit(tag_from_hand, (469, 290))  # 手牌出牌
-            screen.blit(tag_wait_play, (469, 290))  # 等待出牌
-        # 显示牌数
+            screen.blit(tag_wait_play, (467, 327))  # 等待出牌
+    # 显示牌数
         font = pygame.font.SysFont('microsoft Yahei', 30)
         # 显示牌堆牌数
         num = len(deck)
         card_num = font.render(str(num), False, (255, 255, 255))
-        screen.blit(card_num, (367, 162))
+        screen.blit(card_num, (367, 237))
         # 显示放置区牌数
         num = placement_area.size()
         card_num = font.render(str(num), False, (255, 255, 255))
-        screen.blit(card_num, (692, 160))
+        screen.blit(card_num, (692, 237))
         # 显示当前玩家牌数
         for card_num_i in range(0, 4):
-            num = cards_in_hand[turn * 4 + card_num_i].size()
+            num = cards_in_hand[card_num_i].size()
             card_num = font.render(str(num), False, (255, 255, 255))
             if card_num_i == 0:
-                screen.blit(card_num, (312, 490))
+                screen.blit(card_num, (312, 524))
             elif card_num_i == 1:
-                screen.blit(card_num, (474, 490))
+                screen.blit(card_num, (474, 524))
             elif card_num_i == 2:
-                screen.blit(card_num, (637, 490))
+                screen.blit(card_num, (637, 524))
             elif card_num_i == 3:
-                screen.blit(card_num, (799, 490))
+                screen.blit(card_num, (799, 524))
         # 显示对方玩家牌数
-        if turn == 1:
-            temp_turn = 0
-        else:
-            temp_turn = 1
-        for card_num_i in range(0, 4):
-            num = cards_in_hand[temp_turn * 4 + card_num_i].size()
+        for card_num_i in range(4, 8):
+            num = cards_in_hand[card_num_i].size()
             card_num = font.render(str(num), False, (255, 255, 255))
-            if card_num_i == 0:
-                screen.blit(card_num, (312, 72))
-            elif card_num_i == 1:
-                screen.blit(card_num, (474, 72))
-            elif card_num_i == 2:
-                screen.blit(card_num, (637, 72))
-            elif card_num_i == 3:
-                screen.blit(card_num, (799, 72))
+            if card_num_i == 4:
+                screen.blit(card_num, (312, 33))
+            elif card_num_i == 5:
+                screen.blit(card_num, (474, 33))
+            elif card_num_i == 6:
+                screen.blit(card_num, (637, 33))
+            elif card_num_i == 7:
+                screen.blit(card_num, (799, 33))
 
         # 刷新屏幕
         pygame.display.flip()
@@ -580,7 +587,7 @@ def local_match():
                             and event.pos[1] in range(18, 18 + size_return[1]):
                         print('动作：点击按钮【返回】')
                         return
-                    elif event.pos[0] in range(326, 326 + 105) and event.pos[1] in range(213, 213 + 150):
+                    elif event.pos[0] in range(327, 327 + 105) and event.pos[1] in range(287, 287 + 150):
 
                         if turn == 0:
                             print('动作：A从【牌堆】抽牌')
@@ -589,9 +596,9 @@ def local_match():
                         # 随机生成一个 [0, len(deck)) 的浮点数，得到随机的下标
                         random_num = random.randint(0, len(deck) - 1)
                         show_situation(4)
-                        screen.blit(cards[deck[random_num]].card_image, (326, 213))
+                        screen.blit(cards[deck[random_num]].card_image, (327, 287))
                         pygame.display.flip()  # 刷新屏幕
-                        time.sleep(1)
+                        time.sleep(0.4)
                         if (not placement_area.is_empty()) \
                                 and cards[deck[random_num]].card_type == placement_area.peek().card_type:
                             print('事件：同花Boom')
@@ -608,13 +615,13 @@ def local_match():
                                     cards_in_hand[turn * 4 + 3].push(placement_area.peek())
                                 placement_area.pop()
                             show_situation(3)
-                            time.sleep(1)
+                            time.sleep(0.5)
                         else:
                             print('事件：安全出牌')
                             placement_area.push(cards[deck[random_num]])
                             del deck[random_num]
                             show_situation(2)
-                            time.sleep(1)
+                            time.sleep(0.5)
                         print('事件：轮换')
                         if turn == 1:
                             turn = 0
@@ -622,38 +629,46 @@ def local_match():
                             turn = 1
                         show_situation(1)
 
-                    elif (event.pos[0] in range(244, 244 + 105) and event.pos[1] in range(521, 521 + 150)) \
-                            or (event.pos[0] in range(406, 406 + 105) and event.pos[1] in range(521, 521 + 150)) \
-                            or (event.pos[0] in range(569, 569 + 105) and event.pos[1] in range(521, 521 + 150)) \
-                            or (event.pos[0] in range(731, 731 + 105) and event.pos[1] in range(521, 521 + 150)):
+                    elif (event.pos[0] in range(244, 244 + 105)
+                          and event.pos[1] in range(555 - turn * 491, 555 + 150 - turn * 491)) \
+                            or (event.pos[0] in range(406, 406 + 105)
+                                and event.pos[1] in range(555 - turn * 491, 555 + 150 - turn * 491)) \
+                            or (event.pos[0] in range(569, 569 + 105)
+                                and event.pos[1] in range(555 - turn * 491, 555 + 150 - turn * 491)) \
+                            or (event.pos[0] in range(731, 731 + 105)
+                                and event.pos[1] in range(555 - turn * 491, 555 + 150 - turn * 491)):
                         # 从手牌出牌
                         temp_type = 'X'  # X表示无效的temp_type
                         if turn == 0:
                             character = 'A'
                         else:
                             character = 'B'
-                        if event.pos[0] in range(244, 244 + 105) and event.pos[1] in range(521, 521 + 150):
+                        if event.pos[0] in range(244, 244 + 105) \
+                                and event.pos[1] in range(555 - turn * 491, 555 + 150 - turn * 491):
                             if cards_in_hand[turn * 4 + 0].is_empty():
                                 continue
                             print('动作：%s从【手牌】抽牌，【黑桃】' % character)
                             temp_type = 'S'
-                        elif event.pos[0] in range(406, 406 + 105) and event.pos[1] in range(521, 521 + 150):
+                        elif event.pos[0] in range(406, 406 + 105) \
+                                and event.pos[1] in range(555 - turn * 491, 555 + 150 - turn * 491):
                             if cards_in_hand[turn * 4 + 1].is_empty():
                                 continue
                             print('动作：%s从【手牌】抽牌，【红心】' % character)
                             temp_type = 'H'
-                        elif event.pos[0] in range(569, 569 + 105) and event.pos[1] in range(521, 521 + 150):
+                        elif event.pos[0] in range(569, 569 + 105) \
+                                and event.pos[1] in range(555 - turn * 491, 555 + 150 - turn * 491):
                             if cards_in_hand[turn * 4 + 2].is_empty():
                                 continue
                             print('动作：%s从【手牌】抽牌，【梅花】' % character)
                             temp_type = 'C'
-                        elif event.pos[0] in range(731, 731 + 105) and event.pos[1] in range(521, 521 + 150):
+                        elif event.pos[0] in range(731, 731 + 105) \
+                                and event.pos[1] in range(555 - turn * 491, 555 + 150 - turn * 491):
                             if cards_in_hand[turn * 4 + 3].is_empty():
                                 continue
                             print('动作：%s从【手牌】抽牌，【方块】' % character)
                             temp_type = 'D'
                         show_situation(5)  # 手牌出牌
-                        time.sleep(1)
+
                         if placement_area.is_empty():
                             if temp_type == 'S':
                                 placement_area.push(cards_in_hand[turn * 4 + 0].peek())
@@ -668,7 +683,6 @@ def local_match():
                                 placement_area.push(cards_in_hand[turn * 4 + 3].peek())
                                 cards_in_hand[turn * 4 + 3].pop()
                             show_situation(2)
-                            time.sleep(1)
                         else:
                             if temp_type == placement_area.peek().card_type:
                                 print('事件：同花Boom')
@@ -683,7 +697,7 @@ def local_match():
                                         cards_in_hand[turn * 4 + 3].push(placement_area.peek())
                                     placement_area.pop()
                                 show_situation(3)
-                                time.sleep(1)
+                                time.sleep(0.5)
                             else:
                                 print('事件：安全出牌')
                                 if temp_type == 'S':
@@ -699,7 +713,7 @@ def local_match():
                                     placement_area.push(cards_in_hand[turn * 4 + 3].peek())
                                     cards_in_hand[turn * 4 + 3].pop()
                                 show_situation(2)
-                                time.sleep(1)
+                                time.sleep(0.5)
                         print('事件：轮换')
                         if turn == 1:
                             turn = 0
@@ -713,12 +727,12 @@ def local_match():
         a_score = cards_in_hand[0 + type_i].size()
         b_score = cards_in_hand[3 + type_i].size()
     if a_score == b_score:  # 平局
-        screen.blit(tag_equal, (469, 370))
+        screen.blit(tag_equal, (469, 407))
     else:
         if a_score < b_score:  # A胜出
-            screen.blit(tag_A_win, (469, 370))
+            screen.blit(tag_A_win, (469, 407))
         else:  # B胜出
-            screen.blit(tag_B_win, (469, 370))
+            screen.blit(tag_B_win, (469, 407))
     # 刷新屏幕
     pygame.display.flip()
     while True:
