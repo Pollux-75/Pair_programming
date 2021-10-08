@@ -14,6 +14,9 @@ global rule  # 规则
 global plat_rule  # 规则放置区
 global txt_volume  # “音量”
 global txt_open_recorder  # “开启记牌器”
+global use_card_recorder  # 是否开启记牌器的变量
+global image_card_recorder_switch_on  # 打开记牌器开关的图片
+global image_card_recorder_switch_off  # 关闭记牌器开关的图片
 
 global tag_gamer_A  # 玩家A标牌
 global tag_gamer_B  # 玩家B标牌
@@ -81,7 +84,6 @@ global cards  # 卡牌
 global card_images  # 卡牌图片
 global card_sounds  # 卡牌语音
 global card_back  # 卡牌背面
-
 
 # ====================pygame相关初始化开始==================== #
 # pygame初始化
@@ -180,6 +182,10 @@ tag_from_hand = pygame.image.load('./images/tags/' + '手牌出牌.jpg')
 tag_from_deck = pygame.image.load('./images/tags/' + '牌堆出牌.jpg')
 # 导入 平局标牌
 tag_equal = pygame.image.load('./images/tags/' + '平局.jpg')
+# 导入 打开记牌器开关的图片
+image_card_recorder_switch_on = pygame.image.load('./images/tags/' + '开关_开.jpg')
+# 导入 关闭记牌器开关的图片
+image_card_recorder_switch_off = pygame.image.load('./images/tags/' + '开关_关.jpg')
 
 # 导入 按钮：开始游戏
 button_game_start = pygame.image.load('./images/tags/' + '开始游戏.jpg')
@@ -236,9 +242,9 @@ class CARD:
     # 方块：D
     # 大小王：K
     def __init__(self, card_value=1, card_type='S',
-                 card_image=pygame.image.load('./images/' + '1.jpg'),):
+                 card_image=pygame.image.load('./images/' + '1.jpg'), ):
         self.card_value = card_value  # 卡牌数值
-        self.card_type = card_type    # 卡牌花色
+        self.card_type = card_type  # 卡牌花色
         self.card_image = card_image  # 卡牌图片
 
 
@@ -276,6 +282,24 @@ for i in range(40, 53):
 for i in range(53, 55):
     cards.append(CARD(i - 39, 'K', card_images[i]))
 # ====================卡牌设置结束==================== #
+
+# ====================相关变量/函数设置开始==================== #
+use_card_recorder = True
+
+
+# 花色类型S，H，C，D到0123的映射
+def type_to_int(card_type):
+    if card_type == 'S':
+        return 0
+    if card_type == 'H':
+        return 1
+    if card_type == 'C':
+        return 2
+    if card_type == 'D':
+        return 3
+
+
+# ====================相关变量/函数设置开始==================== #
 
 
 # 开始菜单
@@ -423,15 +447,23 @@ def page_game_rule():
 
 # 游戏设置：
 def page_game_setting():
-    # 转到游戏设置界面
-    screen.blit(background, (0, 0))  # 插入背景
-    screen.blit(title, (318, 108))  # 插入标题
-    screen.blit(button_return, (849, 605))  # 插入返回按钮
-    screen.blit(txt_volume, (222, 327))  # 插入“音量”
-    screen.blit(txt_open_recorder, (156, 421))  # 插入“开启记牌器”
-    # 刷新屏幕
-    pygame.display.flip()
+    global use_card_recorder
 
+    def update_page_game_setting():
+        # 转到游戏设置界面
+        screen.blit(background, (0, 0))  # 插入背景
+        screen.blit(title, (318, 108))  # 插入标题
+        screen.blit(button_return, (849, 605))  # 插入返回按钮
+        screen.blit(txt_volume, (222, 327))  # 插入“音量”
+        screen.blit(txt_open_recorder, (156, 421))  # 插入“开启记牌器”
+        if use_card_recorder:
+            screen.blit(image_card_recorder_switch_on, (455, 425))
+        else:
+            screen.blit(image_card_recorder_switch_off, (455, 425))
+        # 刷新屏幕
+        pygame.display.flip()
+
+    update_page_game_setting()
     while True:
         for event in pygame.event.get():
             if event.type == pygame.MOUSEMOTION:
@@ -445,6 +477,10 @@ def page_game_setting():
                             and event.pos[1] in range(630, 630 + size_return[1]):
                         print('动作：点击按钮【返回】')
                         return
+                    elif event.pos[0] in range(455, 455 + 85) and event.pos[1] in range(425, 425 + 46):
+                        use_card_recorder = not use_card_recorder
+                        update_page_game_setting()
+
         fps_clock.tick(fps)
 
 
@@ -454,6 +490,9 @@ def page_game_quit():
 
 
 def local_match():
+    deck_recorder = [13, 13, 13, 13]  # 牌堆记牌器
+    placement_area_recorder = [0, 0, 0, 0]  # 放置区记牌器
+
     turn = 0  # 0表示A回合，1表示B回合
     # 牌堆，仅保存卡牌下标（因为随机）
     deck = []
@@ -463,6 +502,28 @@ def local_match():
     cards_in_hand = []
     for index in range(0, 8):
         cards_in_hand.append(Stack())  # 初始化手牌，0~3是A的手牌，4~7是B的手牌
+
+    # 记牌器
+    def show_card_recorder():
+        screen.blit(tag_S_amount, (198, 270))  # 插入牌堆记牌器黑桃数量标牌
+        screen.blit(tag_H_amount, (198, 317))  # 插入牌堆记牌器红心数量标牌
+        screen.blit(tag_C_amount, (198, 363))  # 插入牌堆记牌器梅花数量标牌
+        screen.blit(tag_D_amount, (198, 410))  # 插入牌堆记牌器方块数量标牌
+
+        screen.blit(tag_S_amount, (791, 270))  # 插入放置区记牌器黑桃数量标牌
+        screen.blit(tag_H_amount, (791, 317))  # 插入放置区记牌器红心数量标牌
+        screen.blit(tag_C_amount, (791, 363))  # 插入放置区记牌器梅花数量标牌
+        screen.blit(tag_D_amount, (791, 410))  # 插入放置区记牌器方块数量标牌
+
+        # 显示牌数
+        font = pygame.font.SysFont('microsoft Yahei', 30)
+        # 显示牌堆牌数
+        for deck_recorder_i in range(0, 4):
+            card_num = font.render(str(deck_recorder[deck_recorder_i]), False, (255, 255, 255))
+            screen.blit(card_num, (198 + 60, 270 + 47 * deck_recorder_i + 12))
+        for placement_area_recorder_i in range(0, 4):
+            card_num = font.render(str(placement_area_recorder[placement_area_recorder_i]), False, (255, 255, 255))
+            screen.blit(card_num, (791 + 60, 270 + 47 * placement_area_recorder_i + 12))
 
     # 展示当前场上卡牌状况（1：等待出牌，2：安全出排，3：同花BOOM，4：牌堆出牌，5：手牌出牌）
     def show_situation(situation_type):
@@ -535,7 +596,7 @@ def local_match():
         elif situation_type == 5:
             # screen.blit(tag_from_hand, (469, 290))  # 手牌出牌
             screen.blit(tag_wait_play, (467, 327))  # 等待出牌
-    # 显示牌数
+        # 显示牌数
         font = pygame.font.SysFont('microsoft Yahei', 30)
         # 显示牌堆牌数
         num = len(deck)
@@ -570,6 +631,10 @@ def local_match():
             elif card_num_i == 7:
                 screen.blit(card_num, (799, 33))
 
+        # 显示记牌器
+        if use_card_recorder:
+            show_card_recorder()
+
         # 刷新屏幕
         pygame.display.flip()
 
@@ -595,15 +660,19 @@ def local_match():
                             print('动作：A从【牌堆】抽牌')
                         else:
                             print('动作：B从【牌堆】抽牌')
-                        # 随机生成一个 [0, len(deck)) 的浮点数，得到随机的下标
+                        # 随机生成一个 [0, len(deck)) 的整型，得到随机的下标
                         random_num = random.randint(0, len(deck) - 1)
                         show_situation(4)
                         screen.blit(cards[deck[random_num]].card_image, (327, 287))
                         pygame.display.flip()  # 刷新屏幕
                         time.sleep(0.4)
+                        # 牌堆抽牌，牌堆记牌器变化
+                        deck_recorder[type_to_int(cards[deck[random_num]].card_type)] -= 1
                         if (not placement_area.is_empty()) \
                                 and cards[deck[random_num]].card_type == placement_area.peek().card_type:
                             print('事件：同花Boom')
+                            # 同花BOOM，放置区记牌器清空
+                            placement_area_recorder = [0, 0, 0, 0]
                             placement_area.push(cards[deck[random_num]])
                             del deck[random_num]
                             while not placement_area.is_empty():
@@ -619,7 +688,9 @@ def local_match():
                             show_situation(3)
                             time.sleep(0.5)
                         else:
-                            print('事件：安全出牌')
+                            print('事件：不是同花')
+                            # 不是同花，更新放置区记牌器
+                            placement_area_recorder[type_to_int(cards[deck[random_num]].card_type)] += 1
                             placement_area.push(cards[deck[random_num]])
                             del deck[random_num]
                             show_situation(2)
@@ -688,6 +759,8 @@ def local_match():
                         else:
                             if temp_type == placement_area.peek().card_type:
                                 print('事件：同花Boom')
+                                # 同花BOOM，清空放置区记牌器
+                                placement_area_recorder = [0, 0, 0, 0]
                                 while not placement_area.is_empty():
                                     if placement_area.peek().card_type == 'S':
                                         cards_in_hand[turn * 4 + 0].push(placement_area.peek())
@@ -701,7 +774,7 @@ def local_match():
                                 show_situation(3)
                                 time.sleep(0.5)
                             else:
-                                print('事件：安全出牌')
+                                print('事件：不是同花')
                                 if temp_type == 'S':
                                     placement_area.push(cards_in_hand[turn * 4 + 0].peek())
                                     cards_in_hand[turn * 4 + 0].pop()
@@ -714,6 +787,8 @@ def local_match():
                                 elif temp_type == 'D':
                                     placement_area.push(cards_in_hand[turn * 4 + 3].peek())
                                     cards_in_hand[turn * 4 + 3].pop()
+                                # 不是同花，更新放置区记牌器
+                                placement_area_recorder[type_to_int(temp_type)] += 1
                                 show_situation(2)
                                 time.sleep(0.5)
                         print('事件：轮换')
