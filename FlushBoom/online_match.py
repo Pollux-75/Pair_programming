@@ -1,6 +1,7 @@
 import random
 import sys
 import time
+from p_ai import p_ai
 
 import pygame
 import requests
@@ -9,6 +10,9 @@ import json
 import socket
 import os
 import get
+
+from tkinter import *
+from tkinter import messagebox
 # 只有位置不变的按钮才有pos
 # 只有按钮才有size
 # size不考虑阴影，pos考虑阴影
@@ -51,7 +55,14 @@ global tag_wait_play  # 等待出牌标牌
 global tag_from_hand  # 手牌出牌标牌
 global tag_from_deck  # 牌堆出牌标牌
 global tag_equal  # 平局标牌
+global tag_cards_in_hand_amount  # 手牌数量标牌
 
+global button_game_login  # 按钮：登入
+global pos_game_login
+global size_game_login
+global button_game_exit  # 按钮：登入
+global pos_game_exit
+global size_game_exit
 global button_game_start  # 按钮：开始游戏
 global pos_game_start
 global size_game_start
@@ -75,6 +86,18 @@ global size_AI_match
 global button_online_match  # 按钮：联机对战
 global pos_online_match
 global size_online_match
+global button_create_match  # 按钮：创建对局
+global pos_create_match
+global size_create_match
+global button_join_match  # 按钮：加入对局
+global pos_join_match
+global size_join_match
+global hosting  #按钮：托管
+global pos_hosting
+global size_hosting
+global cancal_hosting  #按钮：取消托管
+global pos_cancal_hosting
+global size_cancal_hosting
 
 global size_shadow  # 按钮阴影大小
 
@@ -89,6 +112,9 @@ global cards  # 卡牌
 global card_images  # 卡牌图片
 global card_sounds  # 卡牌语音
 global card_back  # 卡牌背面
+
+global headers
+global datas
 
 # ====================pygame相关初始化开始==================== #
 # pygame初始化
@@ -117,7 +143,10 @@ pygame.display.set_icon(icon)
 # pygame.mixer.music.load('./sounds/' + 'background.mp3')
 # pygame.mixer.music.play(-1, 0.0)
 # ====================窗口设置结束==================== #
-
+# ====================接口参数设置开始==================== #
+headers = {}
+datas = {}
+# ====================接口参数设置结束==================== #
 # ====================导入资源开始==================== #
 # 导入背景
 background = pygame.image.load('./images/' + '背景.jpg')
@@ -187,11 +216,21 @@ tag_from_hand = pygame.image.load('./images/tags/' + '手牌出牌.jpg')
 tag_from_deck = pygame.image.load('./images/tags/' + '牌堆出牌.jpg')
 # 导入 平局标牌
 tag_equal = pygame.image.load('./images/tags/' + '平局.jpg')
+# 导入 手牌数量标牌
+tag_cards_in_hand_amount = pygame.image.load('./images/tags/' + '手牌数量标牌.jpg')
 # 导入 打开记牌器开关的图片
 image_card_recorder_switch_on = pygame.image.load('./images/tags/' + '开关_开.jpg')
 # 导入 关闭记牌器开关的图片
 image_card_recorder_switch_off = pygame.image.load('./images/tags/' + '开关_关.jpg')
 
+#导入 按钮：登入
+button_game_login = pygame.image.load('./images/tags/' + '登入.jpg')
+pos_game_login = (430, 339)
+size_game_login = (220,76)
+#导入 按钮：退出
+button_game_exit = pygame.image.load('./images/tags/' + '退出.jpg')
+pos_game_exit = (430,454)
+size_game_exit = (220, 76)
 # 导入 按钮：开始游戏
 button_game_start = pygame.image.load('./images/tags/' + '开始游戏.jpg')
 size_game_start = (220, 76)
@@ -223,7 +262,21 @@ size_AI_match = (220, 76)
 button_online_match = pygame.image.load('./images/tags/' + '联机对战.jpg')
 pos_online_match = (405, 500)
 size_online_match = (220, 76)
-
+#导入 按钮：创建对局
+button_create_match = pygame.image.load('./images/tags/' + '创建对局.jpg')
+pos_create_match = (430, 307)
+size_create_match = (220, 76)
+#导入 按钮：加入对局
+button_join_match = pygame.image.load('./images/tags/' + '加入对局.jpg')
+pos_join_match = (430, 416)
+size_join_match = (220, 76)
+#导入 按钮：托管
+hosting = pygame.image.load('./images/tags/' + '托管.jpg')
+pos_hosting = (903,630)
+size_hosting = (157,61)
+cancal_hosting = pygame.image.load('./images/tags/' + '取消托管.jpg')
+pos_cancal_hosting = (903,630)
+size_cancal_hosting = (157,61)
 # 设置按钮阴影大小
 size_shadow = (25, 25)
 
@@ -305,7 +358,89 @@ def type_to_int(card_type):
 
 
 # ====================相关变量/函数设置开始==================== #
+#登入界面
+def page_login():
+    screen.blit(background, (0, 0))  # 插入背景
+    screen.blit(title, (318, 108))  # 插入标题
+    screen.blit(button_game_login, pos_game_login)  # 插入按钮：登入
+    screen.blit(button_game_exit, pos_game_exit)  # 插入按钮：退出
+    # 刷新屏幕
+    pygame.display.flip()
 
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.MOUSEMOTION:
+                continue  # 是鼠标移动事件则跳到下一个事件
+
+            if event.type == pygame.QUIT:  # 点击关闭窗口
+                sys.exit()
+            elif event.type == pygame.MOUSEBUTTONUP:  # 点击事件
+                if event.button == 1:  # 左键点击
+                    if event.pos[0] in range(pos_game_login[0] + size_shadow[0],
+                                             pos_game_login[0] + size_shadow[0] + size_game_login[0]) \
+                            and event.pos[1] in range(pos_game_login[1] + size_shadow[1],
+                                                      pos_game_login[1] + size_shadow[1] + size_game_login[1]):
+                        print('动作：点击按钮【登入】')
+                        input_fun1()
+                    if event.pos[0] in range(pos_game_exit[0] + size_shadow[0],
+                                             pos_game_exit[0] + size_shadow[0] + size_game_exit[0]) \
+                            and event.pos[1] in range(pos_game_exit[1] + size_shadow[1],
+                                                      pos_game_exit[1] + size_shadow[1] + size_game_exit[1]):
+                        page_game_quit()
+
+                    # 转到开始登入界面
+                    screen.blit(background, (0, 0))  # 插入背景
+                    screen.blit(title, (318, 108))  # 插入标题
+                    screen.blit(button_game_login, pos_game_login)  # 插入按钮：登入
+                    screen.blit(button_game_exit, pos_game_exit)  # 插入按钮：退出
+                    # 刷新屏幕
+                    pygame.display.flip()
+
+
+def input_fun1():
+    root = Tk()
+    # root.withdraw() #****实现主窗口隐藏
+    root.update()  # *********需要update一下，不update也可以？
+    Label(root, text='账号').grid(row=0, column=0)  # label：文本
+    Label(root, text='密码').grid(row=1, column=0)  # grid：表格结构
+
+    v1 = StringVar()  # 设置了这个可以设置输入的属性
+    v2 = StringVar()
+
+    e1 = Entry(root, textvariable=v1).grid(row=0, column=1, padx=10, pady=5)  # entry：输入框
+    e2 = Entry(root, textvariable=v2, show='*').grid(row=1, column=1, padx=10, pady=5)  # 想显示什么就show=
+    mes = ''
+    def get_token():
+        print("账号：%s" % v1.get())
+        print("密码：%s" % v2.get())
+        headers["Content-Type"] = "application/json;charset=UTF-8"
+        r = {}
+        datas['student_id'] = v1.get()
+        datas['password'] = v2.get()
+        """获取token"""
+        fail = 0
+        url = "http://172.17.173.97:8080/api/user/login"
+
+        r = requests.post(url=url, data=datas)
+        if r.status_code == 200:
+            r = r.json()
+            mes = r['message']
+            if mes == "Success":
+                headers["Authorization"] =r["data"]["token"]
+                root.destroy()
+                page_start_menu()
+            else:
+                print('输入信息错误')
+        else:
+            print("网络连接出现问题")
+        print(r)
+
+    Button(root, text='submit', width=10, command=get_token) \
+        .grid(row=3, column=0, sticky=W, padx=10, pady=10)
+    Button(root, text='exit', width=10, command=root.quit) \
+        .grid(row=3, column=1, sticky=E, padx=10, pady=10)
+    mainloop()
+    return mes
 
 # 开始菜单
 def page_start_menu():
@@ -407,10 +542,10 @@ def page_game_start():
                                                pos_online_match[0] + size_shadow[0] + size_online_match[0]) \
                             and event.pos[1] in range(pos_online_match[1] + size_shadow[1],
                                                       pos_online_match[1] + size_shadow[1] + size_online_match[1]):
-                        print('动作：点击按钮【联机对战】')
+                        print('动作：点击按钮【选择方式】')
                         """-------------------------增加选项：1、创建对局2、加入对局（这里要显示一个输入框，输入房间uid）----------------------"""
                         """如果选择了创建对局的话直接调用online_match()，选择加入对局的话调用online_match(1，input())"""
-                        online_match()
+                        online_chose()
 
                     # 转到开始游戏（选择模式：本地对战；人机对战；联机对战）界面
                     screen.blit(background, (0, 0))  # 插入背景
@@ -424,6 +559,35 @@ def page_game_start():
 
         fps_clock.tick(fps)
 
+def online_chose():
+    screen.blit(background, (0, 0))  # 插入背景
+    screen.blit(title, (318, 12))  # 插入标题
+    screen.blit(button_create_match, (430, 307))  # 插入创建对局按钮
+    screen.blit(button_join_match, (430, 416))  # 插入加入对局按钮
+    # 刷新屏幕
+    pygame.display.flip()
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.MOUSEMOTION:
+                continue  # 是鼠标移动事件则跳到下一个事件
+
+            if event.type == pygame.QUIT:  # 点击关闭窗口
+                sys.exit()
+            elif event.type == pygame.MOUSEBUTTONUP:  # 点击事件
+                if event.button == 1:  # 左键点击
+                    if event.pos[0] in range(pos_create_match[0] + size_shadow[0],
+                                               pos_create_match[0] + size_shadow[0] + size_create_match[0]) \
+                            and event.pos[1] in range(pos_create_match[1] + size_shadow[1],
+                                                      pos_create_match[1] + size_shadow[1] + size_create_match[1]):
+                        print('动作：点击创建对局'
+                              '')
+                        online_match()
+                    elif event.pos[0] in range(pos_join_match[0] + size_shadow[0],
+                                               pos_join_match[0] + size_shadow[0] + size_join_match[0]) \
+                            and event.pos[1] in range(pos_join_match[1] + size_shadow[1],
+                                                      pos_join_match[1] + size_shadow[1] + size_join_match[1]):
+                        print('动作：点击加入对局')
+                        online_match(1,uuid=input('请输入房间号'))
 
 # 游戏规则：
 def page_game_rule():
@@ -842,41 +1006,497 @@ def local_match():
 
 
 def ai_match():
-    pass
+    deck_recorder = [13, 13, 13, 13]  # 牌堆记牌器
+    placement_area_recorder = [0, 0, 0, 0]  # 放置区记牌器
+
+    turn = 0  # 0表示A回合，1表示B回合
+    # 牌堆，仅保存卡牌下标（因为随机）
+    deck = []
+    for ii in range(1, 53):
+        deck.append(ii)
+    placement_area = Stack()  # 放置区
+    cards_in_hand = []
+    for index in range(0, 8):
+        cards_in_hand.append(Stack())  # 初始化手牌，0~3是A的手牌，4~7是B的手牌
+
+    # 记牌器
+    def show_card_recorder():
+        screen.blit(tag_S_amount, (198, 270))  # 插入牌堆记牌器黑桃数量标牌
+        screen.blit(tag_H_amount, (198, 317))  # 插入牌堆记牌器红心数量标牌
+        screen.blit(tag_C_amount, (198, 363))  # 插入牌堆记牌器梅花数量标牌
+        screen.blit(tag_D_amount, (198, 410))  # 插入牌堆记牌器方块数量标牌
+
+        screen.blit(tag_S_amount, (791, 270))  # 插入放置区记牌器黑桃数量标牌
+        screen.blit(tag_H_amount, (791, 317))  # 插入放置区记牌器红心数量标牌
+        screen.blit(tag_C_amount, (791, 363))  # 插入放置区记牌器梅花数量标牌
+        screen.blit(tag_D_amount, (791, 410))  # 插入放置区记牌器方块数量标牌
+
+        # 显示牌数
+        font = pygame.font.SysFont('microsoft Yahei', 30)
+        # 显示牌堆牌数
+        for deck_recorder_i in range(0, 4):
+            card_num = font.render(str(deck_recorder[deck_recorder_i]), False, (255, 255, 255))
+            screen.blit(card_num, (198 + 60, 270 + 47 * deck_recorder_i + 12))
+        for placement_area_recorder_i in range(0, 4):
+            card_num = font.render(str(placement_area_recorder[placement_area_recorder_i]), False, (255, 255, 255))
+            screen.blit(card_num, (791 + 60, 270 + 47 * placement_area_recorder_i + 12))
+
+        # 手牌数量标牌
+        screen.blit(tag_cards_in_hand_amount, (110, 552))  # A-手牌数量标牌
+        screen.blit(tag_cards_in_hand_amount, (110, 60))  # B-手牌数量标牌
+        # 显示手牌牌数
+        card_num = font.render(str(cards_in_hand[0].size() + cards_in_hand[1].size()
+                                   + cards_in_hand[2].size() + cards_in_hand[3].size()), False, (255, 255, 255))
+        screen.blit(card_num, (110 + 70, 552 + 16))
+        card_num = font.render(str(cards_in_hand[4].size() + cards_in_hand[5].size()
+                                   + cards_in_hand[6].size() + cards_in_hand[7].size()), False, (255, 255, 255))
+        screen.blit(card_num, (110 + 70, 60 + 16))
+
+    # 展示当前场上卡牌状况（1：等待出牌，2：安全出排，3：同花BOOM，4：牌堆出牌，5：手牌出牌）
+    def show_situation(situation_type):
+        # 展示当前场上的情况
+        screen.blit(background, (0, 0))  # 插入背景
+        screen.blit(button_return, (872, -7))  # 插入返回按钮
+        screen.blit(tag_gamer_A, (110, 502))  # 玩家A标牌
+        screen.blit(tag_AI, (110, 10))  # 玩家B标牌
+        if turn == 0:
+            screen.blit(tag_A_turn, (467, 248))  # A的回合
+        else:
+            screen.blit(tag_AI_turn, (467, 248))  # B的回合
+        screen.blit(tag_cards_in_hand, (215, 502))  # A的手牌区
+        screen.blit(tag_cards_in_hand, (215, 11))  # B的手牌区
+        screen.blit(tag_deck, (303, 266))  # 牌堆区
+        screen.blit(tag_deck_sign, (338, 468))  # 牌堆区标志
+        screen.blit(tag_deck_amount, (337, 231))  # 牌堆区数量
+        screen.blit(tag_placement_area, (628, 266))  # 放置区
+        screen.blit(tag_placement_area_amount, (662, 229))  # 放置区数量
+        screen.blit(tag_placement_area_sign, (663, 468))  # 放置区标志
+        screen.blit(tag_S_amount, (252, 512))  # A-黑桃数量标牌
+        screen.blit(tag_H_amount, (414, 512))  # A-红心数量标牌
+        screen.blit(tag_C_amount, (577, 512))  # A-梅花数量标牌
+        screen.blit(tag_D_amount, (739, 512))  # A-方块数量标牌
+
+        screen.blit(tag_S_amount, (252, 21))  # B-黑桃数量标牌
+        screen.blit(tag_H_amount, (414, 21))  # B-红心数量标牌
+        screen.blit(tag_C_amount, (577, 21))  # B-梅花数量标牌
+        screen.blit(tag_D_amount, (739, 21))  # B-方块数量标牌
+
+        # 展示牌堆
+        if len(deck) > 0:
+            screen.blit(card_back, (327, 287))  # 牌堆顶是卡牌背面（即不展示）
+        # 展示放置区
+        if not placement_area.is_empty():
+            screen.blit(placement_area.peek().card_image, (651, 289))
+        # 展示手牌
+        for iii in range(0, 8):
+            if not cards_in_hand[iii].is_empty():
+                if iii % 4 == 0:
+                    if iii < 4:
+                        screen.blit(cards_in_hand[iii].peek().card_image, (244, 555))
+                    else:
+                        screen.blit(cards_in_hand[iii].peek().card_image, (244, 64))
+                elif iii % 4 == 1:
+                    if iii < 4:
+                        screen.blit(cards_in_hand[iii].peek().card_image, (406, 555))
+                    else:
+                        screen.blit(cards_in_hand[iii].peek().card_image, (406, 64))
+                elif iii % 4 == 2:
+                    if iii < 4:
+                        screen.blit(cards_in_hand[iii].peek().card_image, (569, 555))
+                    else:
+                        screen.blit(cards_in_hand[iii].peek().card_image, (569, 64))
+                elif iii % 4 == 3:
+                    if iii < 4:
+                        screen.blit(cards_in_hand[iii].peek().card_image, (731, 555))
+                    else:
+                        screen.blit(cards_in_hand[iii].peek().card_image, (731, 64))
+        # 展示当前状况（1：等待出牌，2：安全出排，3：同花BOOM，4：牌堆出牌，5：手牌出牌）
+        if situation_type == 1:
+            screen.blit(tag_wait_play, (467, 327))  # 等待出牌
+        elif situation_type == 2:
+            screen.blit(tag_safe_play, (467, 327))  # 安全出排
+        elif situation_type == 3:
+            screen.blit(tag_flush_boom, (467, 327))  # 同花BOOM
+        elif situation_type == 4:
+            # screen.blit(tag_from_deck, (469, 290))  # 牌堆出牌
+            screen.blit(tag_wait_play, (467, 327))  # 等待出牌
+        elif situation_type == 5:
+            # screen.blit(tag_from_hand, (469, 290))  # 手牌出牌
+            screen.blit(tag_wait_play, (467, 327))  # 等待出牌
+        # 显示牌数
+        font = pygame.font.SysFont('microsoft Yahei', 30)
+        # 显示牌堆牌数
+        num = len(deck)
+        card_num = font.render(str(num), False, (255, 255, 255))
+        screen.blit(card_num, (367, 237))
+        # 显示放置区牌数
+        num = placement_area.size()
+        card_num = font.render(str(num), False, (255, 255, 255))
+        screen.blit(card_num, (692, 237))
+        # 显示当前玩家牌数
+        for card_num_i in range(0, 4):
+            num = cards_in_hand[card_num_i].size()
+            card_num = font.render(str(num), False, (255, 255, 255))
+            if card_num_i == 0:
+                screen.blit(card_num, (312, 524))
+            elif card_num_i == 1:
+                screen.blit(card_num, (474, 524))
+            elif card_num_i == 2:
+                screen.blit(card_num, (637, 524))
+            elif card_num_i == 3:
+                screen.blit(card_num, (799, 524))
+        # 显示对方玩家牌数
+        for card_num_i in range(4, 8):
+            num = cards_in_hand[card_num_i].size()
+            card_num = font.render(str(num), False, (255, 255, 255))
+            if card_num_i == 4:
+                screen.blit(card_num, (312, 33))
+            elif card_num_i == 5:
+                screen.blit(card_num, (474, 33))
+            elif card_num_i == 6:
+                screen.blit(card_num, (637, 33))
+            elif card_num_i == 7:
+                screen.blit(card_num, (799, 33))
+
+        # 显示记牌器
+        if use_card_recorder:
+            show_card_recorder()
+
+        # 刷新屏幕
+        pygame.display.flip()
+
+    show_situation(1)
+    while len(deck) != 0:
+        for event in pygame.event.get():
+            if len(deck) == 0:
+                break
+            if event.type == pygame.MOUSEMOTION:
+                continue  # 是鼠标移动事件则跳到下一个事件
+
+            if event.type == pygame.QUIT:  # 点击关闭窗口
+                sys.exit()
+            elif event.type == pygame.MOUSEBUTTONUP:  # 点击事件
+                if event.button == 1:  # 左键点击
+                    if event.pos[0] in range(897, 897 + size_return[0]) \
+                            and event.pos[1] in range(18, 18 + size_return[1]):
+                        print('动作：点击按钮【返回】')
+                        return
+                    elif event.pos[0] in range(327, 327 + 105) and event.pos[1] in range(287, 287 + 150):
+
+                        if turn == 0:
+                            print('动作：A从【牌堆】抽牌')
+                        else:
+                            print('动作：B从【牌堆】抽牌')
+                        # 随机生成一个 [0, len(deck)) 的整型，得到随机的下标
+                        random_num = random.randint(0, len(deck) - 1)
+                        show_situation(4)
+                        screen.blit(cards[deck[random_num]].card_image, (327, 287))
+                        pygame.display.flip()  # 刷新屏幕
+                        time.sleep(0.4)
+                        # 牌堆抽牌，牌堆记牌器变化
+                        deck_recorder[type_to_int(cards[deck[random_num]].card_type)] -= 1
+                        if (not placement_area.is_empty()) \
+                                and cards[deck[random_num]].card_type == placement_area.peek().card_type:
+                            print('事件：同花Boom')
+                            # 同花BOOM，放置区记牌器清空
+                            placement_area_recorder = [0, 0, 0, 0]
+                            placement_area.push(cards[deck[random_num]])
+                            del deck[random_num]
+                            while not placement_area.is_empty():
+                                if placement_area.peek().card_type == 'S':
+                                    cards_in_hand[turn * 4 + 0].push(placement_area.peek())
+                                elif placement_area.peek().card_type == 'H':
+                                    cards_in_hand[turn * 4 + 1].push(placement_area.peek())
+                                elif placement_area.peek().card_type == 'C':
+                                    cards_in_hand[turn * 4 + 2].push(placement_area.peek())
+                                elif placement_area.peek().card_type == 'D':
+                                    cards_in_hand[turn * 4 + 3].push(placement_area.peek())
+                                placement_area.pop()
+                            show_situation(3)
+                            time.sleep(0.5)
+                        else:
+                            print('事件：不是同花')
+                            # 不是同花，更新放置区记牌器
+                            placement_area_recorder[type_to_int(cards[deck[random_num]].card_type)] += 1
+                            placement_area.push(cards[deck[random_num]])
+                            del deck[random_num]
+                            show_situation(2)
+                            time.sleep(0.5)
+                        print('事件：轮换')
+                        if turn == 1:
+                            turn = 0
+                        else:
+                            turn = 1
+                        show_situation(1)
+
+                    elif (event.pos[0] in range(244, 244 + 105)
+                          and event.pos[1] in range(555 - turn * 491, 555 + 150 - turn * 491)) \
+                            or (event.pos[0] in range(406, 406 + 105)
+                                and event.pos[1] in range(555 - turn * 491, 555 + 150 - turn * 491)) \
+                            or (event.pos[0] in range(569, 569 + 105)
+                                and event.pos[1] in range(555 - turn * 491, 555 + 150 - turn * 491)) \
+                            or (event.pos[0] in range(731, 731 + 105)
+                                and event.pos[1] in range(555 - turn * 491, 555 + 150 - turn * 491)):
+                        # 从手牌出牌
+                        temp_type = 'X'  # X表示无效的temp_type
+                        if turn == 0:
+                            character = 'A'
+                        else:
+                            character = 'B'
+                        if event.pos[0] in range(244, 244 + 105) \
+                                and event.pos[1] in range(555 - turn * 491, 555 + 150 - turn * 491):
+                            if cards_in_hand[turn * 4 + 0].is_empty():
+                                continue
+                            print('动作：%s从【手牌】抽牌，【黑桃】' % character)
+                            temp_type = 'S'
+                        elif event.pos[0] in range(406, 406 + 105) \
+                                and event.pos[1] in range(555 - turn * 491, 555 + 150 - turn * 491):
+                            if cards_in_hand[turn * 4 + 1].is_empty():
+                                continue
+                            print('动作：%s从【手牌】抽牌，【红心】' % character)
+                            temp_type = 'H'
+                        elif event.pos[0] in range(569, 569 + 105) \
+                                and event.pos[1] in range(555 - turn * 491, 555 + 150 - turn * 491):
+                            if cards_in_hand[turn * 4 + 2].is_empty():
+                                continue
+                            print('动作：%s从【手牌】抽牌，【梅花】' % character)
+                            temp_type = 'C'
+                        elif event.pos[0] in range(731, 731 + 105) \
+                                and event.pos[1] in range(555 - turn * 491, 555 + 150 - turn * 491):
+                            if cards_in_hand[turn * 4 + 3].is_empty():
+                                continue
+                            print('动作：%s从【手牌】抽牌，【方块】' % character)
+                            temp_type = 'D'
+                        show_situation(5)  # 手牌出牌
+
+                        if placement_area.is_empty():
+                            if temp_type == 'S':
+                                placement_area.push(cards_in_hand[turn * 4 + 0].peek())
+                                cards_in_hand[turn * 4 + 0].pop()
+                            elif temp_type == 'H':
+                                placement_area.push(cards_in_hand[turn * 4 + 1].peek())
+                                cards_in_hand[turn * 4 + 1].pop()
+                            elif temp_type == 'C':
+                                placement_area.push(cards_in_hand[turn * 4 + 2].peek())
+                                cards_in_hand[turn * 4 + 2].pop()
+                            elif temp_type == 'D':
+                                placement_area.push(cards_in_hand[turn * 4 + 3].peek())
+                                cards_in_hand[turn * 4 + 3].pop()
+                            show_situation(2)
+                        else:
+                            if temp_type == placement_area.peek().card_type:
+                                print('事件：同花Boom')
+                                # 同花BOOM，清空放置区记牌器
+                                placement_area_recorder = [0, 0, 0, 0]
+                                while not placement_area.is_empty():
+                                    if placement_area.peek().card_type == 'S':
+                                        cards_in_hand[turn * 4 + 0].push(placement_area.peek())
+                                    elif placement_area.peek().card_type == 'H':
+                                        cards_in_hand[turn * 4 + 1].push(placement_area.peek())
+                                    elif placement_area.peek().card_type == 'C':
+                                        cards_in_hand[turn * 4 + 2].push(placement_area.peek())
+                                    elif placement_area.peek().card_type == 'D':
+                                        cards_in_hand[turn * 4 + 3].push(placement_area.peek())
+                                    placement_area.pop()
+                                show_situation(3)
+                                time.sleep(0.5)
+                            else:
+                                print('事件：不是同花')
+                                if temp_type == 'S':
+                                    placement_area.push(cards_in_hand[turn * 4 + 0].peek())
+                                    cards_in_hand[turn * 4 + 0].pop()
+                                elif temp_type == 'H':
+                                    placement_area.push(cards_in_hand[turn * 4 + 1].peek())
+                                    cards_in_hand[turn * 4 + 1].pop()
+                                elif temp_type == 'C':
+                                    placement_area.push(cards_in_hand[turn * 4 + 2].peek())
+                                    cards_in_hand[turn * 4 + 2].pop()
+                                elif temp_type == 'D':
+                                    placement_area.push(cards_in_hand[turn * 4 + 3].peek())
+                                    cards_in_hand[turn * 4 + 3].pop()
+                                # 不是同花，更新放置区记牌器
+                                placement_area_recorder[type_to_int(temp_type)] += 1
+                                show_situation(2)
+                                time.sleep(0.5)
+                        print('事件：轮换')
+                        if turn == 1:
+                            turn = 0
+                        else:
+                            turn = 1
+                        show_situation(1)
+
+                    if turn == 1:
+                        now_info = []
+                        for now_info_i in range(0, 4):
+                            now_info.append(cards_in_hand[4 + now_info_i].size())
+                        for now_info_i in range(0, 4):
+                            now_info.append(cards_in_hand[now_info_i].size())
+                        for now_info_i in range(0, 4):
+                            now_info.append(deck_recorder[now_info_i])
+                        for now_info_i in range(0, 4):
+                            now_info.append(placement_area_recorder[now_info_i])
+                        if not placement_area.is_empty():
+                            now_info.append(type_to_int(placement_area.peek().card_type))
+                        else:
+                            now_info.append(4)
+
+                        ai_answer = p_ai(now_info)
+
+                        if ai_answer == 4:
+                            print('动作：AI从牌堆抽牌')
+                            # 随机生成一个 [0, len(deck)) 的整型，得到随机的下标
+                            random_num = random.randint(0, len(deck) - 1)
+                            show_situation(4)
+                            screen.blit(cards[deck[random_num]].card_image, (327, 287))
+                            pygame.display.flip()  # 刷新屏幕
+                            time.sleep(0.4)
+                            # 牌堆抽牌，牌堆记牌器变化
+                            deck_recorder[type_to_int(cards[deck[random_num]].card_type)] -= 1
+                            if (not placement_area.is_empty()) \
+                                    and cards[deck[random_num]].card_type == placement_area.peek().card_type:
+                                print('事件：同花Boom')
+                                # 同花BOOM，放置区记牌器清空
+                                placement_area_recorder = [0, 0, 0, 0]
+                                placement_area.push(cards[deck[random_num]])
+                                del deck[random_num]
+                                while not placement_area.is_empty():
+                                    if placement_area.peek().card_type == 'S':
+                                        cards_in_hand[turn * 4 + 0].push(placement_area.peek())
+                                    elif placement_area.peek().card_type == 'H':
+                                        cards_in_hand[turn * 4 + 1].push(placement_area.peek())
+                                    elif placement_area.peek().card_type == 'C':
+                                        cards_in_hand[turn * 4 + 2].push(placement_area.peek())
+                                    elif placement_area.peek().card_type == 'D':
+                                        cards_in_hand[turn * 4 + 3].push(placement_area.peek())
+                                    placement_area.pop()
+                                show_situation(3)
+                                time.sleep(0.5)
+                            else:
+                                print('事件：不是同花')
+                                # 不是同花，更新放置区记牌器
+                                placement_area_recorder[type_to_int(cards[deck[random_num]].card_type)] += 1
+                                placement_area.push(cards[deck[random_num]])
+                                del deck[random_num]
+                                show_situation(2)
+                                time.sleep(0.5)
+                            print('事件：轮换')
+                            if turn == 1:
+                                turn = 0
+                            else:
+                                turn = 1
+                            show_situation(1)
+
+                        else:
+                            # AI从手牌出牌
+                            temp_type = 'X'  # X表示无效的temp_type
+                            if ai_answer == 0:
+                                if cards_in_hand[turn * 4 + 0].is_empty():
+                                    continue
+                                print('动作：AI从【手牌】抽牌，【黑桃】')
+                                temp_type = 'S'
+                            elif ai_answer == 1:
+                                if cards_in_hand[turn * 4 + 1].is_empty():
+                                    continue
+                                print('动作：AI从【手牌】抽牌，【红心】')
+                                temp_type = 'H'
+                            elif ai_answer == 2:
+                                if cards_in_hand[turn * 4 + 2].is_empty():
+                                    continue
+                                print('动作：AI从【手牌】抽牌，【梅花】')
+                                temp_type = 'C'
+                            elif ai_answer == 3:
+                                if cards_in_hand[turn * 4 + 3].is_empty():
+                                    continue
+                                print('动作：AI从【手牌】抽牌，【方块】')
+                                temp_type = 'D'
+                            show_situation(5)  # 手牌出牌
+
+                            if placement_area.is_empty():
+                                if temp_type == 'S':
+                                    placement_area.push(cards_in_hand[turn * 4 + 0].peek())
+                                    cards_in_hand[turn * 4 + 0].pop()
+                                elif temp_type == 'H':
+                                    placement_area.push(cards_in_hand[turn * 4 + 1].peek())
+                                    cards_in_hand[turn * 4 + 1].pop()
+                                elif temp_type == 'C':
+                                    placement_area.push(cards_in_hand[turn * 4 + 2].peek())
+                                    cards_in_hand[turn * 4 + 2].pop()
+                                elif temp_type == 'D':
+                                    placement_area.push(cards_in_hand[turn * 4 + 3].peek())
+                                    cards_in_hand[turn * 4 + 3].pop()
+                                show_situation(2)
+                            else:
+                                if temp_type == placement_area.peek().card_type:
+                                    print('事件：同花Boom')
+                                    # 同花BOOM，清空放置区记牌器
+                                    placement_area_recorder = [0, 0, 0, 0]
+                                    while not placement_area.is_empty():
+                                        if placement_area.peek().card_type == 'S':
+                                            cards_in_hand[turn * 4 + 0].push(placement_area.peek())
+                                        elif placement_area.peek().card_type == 'H':
+                                            cards_in_hand[turn * 4 + 1].push(placement_area.peek())
+                                        elif placement_area.peek().card_type == 'C':
+                                            cards_in_hand[turn * 4 + 2].push(placement_area.peek())
+                                        elif placement_area.peek().card_type == 'D':
+                                            cards_in_hand[turn * 4 + 3].push(placement_area.peek())
+                                        placement_area.pop()
+                                    show_situation(3)
+                                    time.sleep(0.5)
+                                else:
+                                    print('事件：不是同花')
+                                    if temp_type == 'S':
+                                        placement_area.push(cards_in_hand[turn * 4 + 0].peek())
+                                        cards_in_hand[turn * 4 + 0].pop()
+                                    elif temp_type == 'H':
+                                        placement_area.push(cards_in_hand[turn * 4 + 1].peek())
+                                        cards_in_hand[turn * 4 + 1].pop()
+                                    elif temp_type == 'C':
+                                        placement_area.push(cards_in_hand[turn * 4 + 2].peek())
+                                        cards_in_hand[turn * 4 + 2].pop()
+                                    elif temp_type == 'D':
+                                        placement_area.push(cards_in_hand[turn * 4 + 3].peek())
+                                        cards_in_hand[turn * 4 + 3].pop()
+                                    # 不是同花，更新放置区记牌器
+                                    placement_area_recorder[type_to_int(temp_type)] += 1
+                                    show_situation(2)
+                                    time.sleep(0.5)
+                            print('事件：轮换')
+                            if turn == 1:
+                                turn = 0
+                            else:
+                                turn = 1
+                            show_situation(1)
+
+    a_score = 0
+    b_score = 0
+    for type_i in range(0, 4):
+        a_score = cards_in_hand[0 + type_i].size()
+        b_score = cards_in_hand[3 + type_i].size()
+    if a_score == b_score:  # 平局
+        screen.blit(tag_equal, (469, 407))
+    else:
+        if a_score < b_score:  # A胜出
+            screen.blit(tag_A_win, (469, 407))
+        else:  # B胜出
+            screen.blit(tag_AI_win, (469, 407))
+    # 刷新屏幕
+    pygame.display.flip()
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.MOUSEMOTION:
+                continue  # 是鼠标移动事件则跳到下一个事件
+
+            if event.type == pygame.QUIT:  # 点击关闭窗口
+                sys.exit()
+            elif event.type == pygame.MOUSEBUTTONUP:  # 点击事件
+                if event.button == 1:  # 左键点击
+                    if event.pos[0] in range(897, 897 + size_return[0]) \
+                            and event.pos[1] in range(18, 18 + size_return[1]):
+                        print('动作：点击按钮【返回】')
+                        return
 
 
 def online_match(host_client=0, uuid=""):
-    headers = {"Content-Type": "application/json;charset=UTF-8"}
-    r = {}
-    datas = {
-        'student_id': '031902322',
-        'password': '895875010.3'
-    }
-
-    def login():
-        """获取token"""
-        fail = 0
-        url = "http://172.17.173.97:8080/api/user/login"
-        while True:
-            try:
-                if fail >= 20:
-                    break
-                r = requests.post(url=url, data=datas)
-                if r.status_code == 200:
-                    r = r.json()["data"]["token"]
-                else:
-                    continue
-            except:
-                fail += 1
-                print("网络连接出现问题，正在尝试", fail)
-            else:
-                break
-
-        # 将获取到的token返回
-        return r
-
-    headers["Authorization"] = str(login())
-
     def creat_game():
         """调用获取登录信息接口，将登录成功后，返回的token放在该请求的header中"""
         # 将login（）方法中返回的token放入header中
@@ -983,10 +1603,14 @@ def online_match(host_client=0, uuid=""):
             screen.blit(card_num, (791 + 60, 270 + 47 * placement_area_recorder_i + 12))
 
     # 展示当前场上卡牌状况（1：等待出牌，2：安全出排，3：同花BOOM，4：牌堆出牌，5：手牌出牌）
-    def show_situation(situation_type):
+    def show_situation(situation_type, ai=0):
         # 展示当前场上的情况
         screen.blit(background, (0, 0))  # 插入背景
         screen.blit(button_return, (872, -7))  # 插入返回按钮
+        if ai == 0:
+            screen.blit(hosting,pos_hosting)  # 插入托管按钮
+        else:
+            screen.blit(cancal_hosting,pos_cancal_hosting)  # 插入取消托管按钮
         if host_client == 0:
             screen.blit(tag_gamer_A, (110, 502))  # 玩家A标牌
             screen.blit(tag_gamer_B, (110, 10))  # 玩家B标牌
@@ -1175,6 +1799,20 @@ def online_match(host_client=0, uuid=""):
         # addr = 服务器端的IP和端口
         addr = (get.get_ip(), 10000)  # 只有自己一台电脑做测试时，可以直接用左边的
         s.connect(addr)
+        #需要根据接口返回决定谁先手
+    first_hand = get_last()
+    if host_client == 0:
+        if first_hand['data']['your_turn'] == True:
+            turn = 0
+        else:
+            turn = 1
+    elif host_client == 1:
+        if first_hand['data']['your_turn'] == True:
+            turn = 1
+        else:
+            turn = 0
+    mark_ai = 0
+    show_situation(1,mark_ai)  # 等待出牌
     while deck_num != 0:
         if turn == 1 and host_client == 0 or turn == 0 and host_client == 1:
             if host_client == 0:
@@ -1205,6 +1843,39 @@ def online_match(host_client=0, uuid=""):
                 # pyautogui.moveTo(781, 139, duration=0.25)
                 k = pygame.event.Event(pygame.MOUSEBUTTONUP, {'pos': (781, 139), 'button': 1, 'window': None})
             pygame.event.post(k)
+        if mark_ai == 1 and host_client == turn:
+            now_info = []
+            for now_info_i in range(0, 4):
+                if host_client == 0:
+                    now_info.append(cards_in_hand[now_info_i].size())
+                else:
+                    now_info.append(cards_in_hand[4 + now_info_i].size())
+            for now_info_i in range(0, 4):
+                if host_client == 0:
+                    now_info.append(cards_in_hand[4 + now_info_i].size())
+                else:
+                    now_info.append(cards_in_hand[now_info_i].size())
+            for now_info_i in range(0, 4):
+                now_info.append(deck_recorder[now_info_i])
+            for now_info_i in range(0, 4):
+                now_info.append(placement_area_recorder[now_info_i])
+            if not placement_area.is_empty():
+                now_info.append(type_to_int(placement_area.peek().card_type))
+            else:
+                now_info.append(4)
+
+            ai_answer = p_ai(now_info)
+            if ai_answer == 0:
+                k = pygame.event.Event(pygame.MOUSEBUTTONUP, {'pos': (294, 139), 'button': 1, 'window': None})
+            if ai_answer == 1:
+                k = pygame.event.Event(pygame.MOUSEBUTTONUP, {'pos': (456, 139), 'button': 1, 'window': None})
+            if ai_answer == 2:
+                k = pygame.event.Event(pygame.MOUSEBUTTONUP, {'pos': (619, 139), 'button': 1, 'window': None})
+            if ai_answer == 3:
+                k = pygame.event.Event(pygame.MOUSEBUTTONUP, {'pos': (781, 139), 'button': 1, 'window': None})
+            if ai_answer == 4:
+                k = pygame.event.Event(pygame.MOUSEBUTTONUP, {'pos': (337, 337), 'button': 1, 'window': None})
+            pygame.event.post(k)
         """触发获取到的事件"""
         for event in pygame.event.get():
             if len(deck) == 0:
@@ -1213,12 +1884,21 @@ def online_match(host_client=0, uuid=""):
                 continue  # 是鼠标移动事件则跳到下一个事件
             if event.type == pygame.QUIT:  # 点击关闭窗口
                 sys.exit()
+
             elif event.type == pygame.MOUSEBUTTONUP:  # 点击事件
                 if event.button == 1:  # 左键点击
                     if event.pos[0] in range(897, 897 + size_return[0]) \
                             and event.pos[1] in range(18, 18 + size_return[1]):
                         print('动作：点击按钮【返回】')
                         return
+                    if event.pos[0] in range(pos_hosting[0], pos_hosting[0] + size_hosting[0]) \
+                            and event.pos[1] in range(pos_hosting[1], pos_hosting[1] + size_hosting[1]):
+                        mark_ai = 1
+                        break
+                    elif event.pos[0] in range(pos_cancal_hosting[0], pos_cancal_hosting[0] + size_cancal_hosting[0]) \
+                            and event.pos[1] in range(pos_cancal_hosting[1], pos_cancal_hosting[1] + size_cancal_hosting[1]):
+                        mark_ai = 0
+                        break
                     elif event.pos[0] in range(327, 327 + 105) and event.pos[1] in range(287, 287 + 150):
                         if turn == 0:
                             print('动作：A从【牌堆】抽牌')
@@ -1250,7 +1930,7 @@ def online_match(host_client=0, uuid=""):
                             num_string = "13"
                         random_num = mark * 13 + int(num_string) - 1
                         print("随机数是{}".format(random_num))
-                        show_situation(4)
+                        show_situation(4,mark_ai)
                         screen.blit(cards[deck[random_num]].card_image, (327, 287))
                         pygame.display.flip()  # 刷新屏幕
                         time.sleep(0.4)
@@ -1274,7 +1954,7 @@ def online_match(host_client=0, uuid=""):
                                 elif placement_area.peek().card_type == 'D':
                                     cards_in_hand[turn * 4 + 3].push(placement_area.peek())
                                 placement_area.pop()
-                            show_situation(3)
+                            show_situation(3,mark_ai)
                             time.sleep(0.5)
                         else:
                             print('事件：不是同花')
@@ -1283,7 +1963,7 @@ def online_match(host_client=0, uuid=""):
                             placement_area.push(cards[deck[random_num]])
                             # del deck[random_num]
                             deck_num = deck_num - 1
-                            show_situation(2)
+                            show_situation(2,mark_ai)
                             time.sleep(0.5)
                         if turn == 0 and host_client == 0:
                             client_socket.send('finish'.encode("gbk"))
@@ -1294,7 +1974,7 @@ def online_match(host_client=0, uuid=""):
                             turn = 0
                         else:
                             turn = 1
-                        show_situation(1)
+                        show_situation(1,mark_ai)
 
 
                     elif (event.pos[0] in range(244, 244 + 105) or event.pos[0] in range(406, 406 + 105) or \
@@ -1339,7 +2019,7 @@ def online_match(host_client=0, uuid=""):
                             if turn == host_client:
                                 a = type_to_int(temp_type)
                                 player_do(1, temp_type + value_change(cards_in_hand[turn * 4 + a].peek().card_value))
-                        show_situation(5)  # 手牌出牌
+                        show_situation(5,mark_ai)  # 手牌出牌
 
                         if placement_area.is_empty():
                             if temp_type == 'S':
@@ -1358,7 +2038,7 @@ def online_match(host_client=0, uuid=""):
                                 placement_area.push(cards_in_hand[turn * 4 + 3].peek())
                                 print(cards_in_hand[turn * 4 + 3].peek())
                                 cards_in_hand[turn * 4 + 3].pop()
-                            show_situation(2)
+                            show_situation(2,mark_ai)
                         else:
                             if temp_type == placement_area.peek().card_type:
                                 print('事件：同花Boom')
@@ -1374,7 +2054,7 @@ def online_match(host_client=0, uuid=""):
                                     elif placement_area.peek().card_type == 'D':
                                         cards_in_hand[turn * 4 + 3].push(placement_area.peek())
                                     placement_area.pop()
-                                show_situation(3)
+                                show_situation(3,mark_ai)
                                 time.sleep(0.5)
                             else:
                                 print('事件：不是同花')
@@ -1392,7 +2072,7 @@ def online_match(host_client=0, uuid=""):
                                     cards_in_hand[turn * 4 + 3].pop()
                                 # 不是同花，更新放置区记牌器
                                 placement_area_recorder[type_to_int(temp_type)] += 1
-                                show_situation(2)
+                                show_situation(2,mark_ai)
                                 time.sleep(0.5)
                         print('事件：轮换')
                         if turn == 0 and host_client == 0:
@@ -1403,7 +2083,7 @@ def online_match(host_client=0, uuid=""):
                             turn = 0
                         else:
                             turn = 1
-                        show_situation(1)
+                        show_situation(1,mark_ai)
 
     if host_client == 0:
         socket_server.close()
@@ -1441,4 +2121,4 @@ def online_match(host_client=0, uuid=""):
 
 if __name__ == '__main__':
     # 开始菜单
-    page_start_menu()
+    page_login()
