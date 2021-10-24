@@ -570,6 +570,7 @@ def online_chose():
     screen.blit(title, (318, 12))  # 插入标题
     screen.blit(button_create_match, (430, 307))  # 插入创建对局按钮
     screen.blit(button_join_match, (430, 416))  # 插入加入对局按钮
+    screen.blit(ai_pk,pos_ai_pk)
     # 刷新屏幕
     pygame.display.flip()
     while True:
@@ -1833,12 +1834,15 @@ def online_match(host_client=0, uuid=""):
                 print(strData)
                 if strData == "finish":
                     client_step = get_last()
+                else:
+                    break
             if host_client == 1:
                 msg = s.recv(1024)
                 print(msg.decode("gbk"))
                 if msg.decode("gbk") == "finish":
                     client_step = get_last()
-
+                else:
+                    break
             if client_step["data"]["last_code"][2] == '0':
                 # pyautogui.moveTo(377, 337, duration=0.25)
                 k = pygame.event.Event(pygame.MOUSEBUTTONUP, {'pos': (337, 337), 'button': 1, 'window': None})
@@ -1895,6 +1899,12 @@ def online_match(host_client=0, uuid=""):
             if event.type == pygame.MOUSEMOTION:
                 continue  # 是鼠标移动事件则跳到下一个事件
             if event.type == pygame.QUIT:  # 点击关闭窗口
+                if host_client == 0:
+                    client_socket.send('exit'.encode("gbk"))
+                    client_socket.close()
+                else:
+                    s.send('exit'.encode("gbk"))
+                    s.close()
                 sys.exit()
 
             elif event.type == pygame.MOUSEBUTTONUP:  # 点击事件
@@ -1902,6 +1912,12 @@ def online_match(host_client=0, uuid=""):
                     if event.pos[0] in range(897, 897 + size_return[0]) \
                             and event.pos[1] in range(18, 18 + size_return[1]):
                         print('动作：点击按钮【返回】')
+                        if host_client == 0:
+                            client_socket.send('exit'.encode("gbk"))
+                            client_socket.close()
+                        else:
+                            s.send('exit'.encode("gbk"))
+                            s.close()
                         return
                     if event.pos[0] in range(pos_hosting[0], pos_hosting[0] + size_hosting[0]) \
                             and event.pos[1] in range(pos_hosting[1], pos_hosting[1] + size_hosting[1]):
@@ -2097,11 +2113,13 @@ def online_match(host_client=0, uuid=""):
                             turn = 1
                         show_situation(1,mark_ai)
 
-    if host_client == 0:
+    '''if host_client == 0:
+        
         socket_server.close()
         os._exit(0)
     else:
-        os._exit(0)
+        s.close()
+        os._exit(0)'''
     a_score = 0
     b_score = 0
     for type_i in range(0, 4):
@@ -2122,17 +2140,28 @@ def online_match(host_client=0, uuid=""):
                 continue  # 是鼠标移动事件则跳到下一个事件
 
             if event.type == pygame.QUIT:  # 点击关闭窗口
+                if host_client == 0:
+                    client_socket.send('exit'.encode("gbk"))
+                    client_socket.close()
+                else:
+                    s.send('exit'.encode("gbk"))
+                    s.close()
                 sys.exit()
             elif event.type == pygame.MOUSEBUTTONUP:  # 点击事件
                 if event.button == 1:  # 左键点击
                     if event.pos[0] in range(897, 897 + size_return[0]) \
                             and event.pos[1] in range(18, 18 + size_return[1]):
                         print('动作：点击按钮【返回】')
+                        if host_client == 0:
+                            client_socket.send('exit'.encode("gbk"))
+                            client_socket.close()
+                        else:
+                            s.send('exit'.encode("gbk"))
+                            s.close()
                         return
 
 def ai_pk_ai():
     uuid_ai = creat_game()
-    print(uuid_ai)
     def get_last():
         url = "http://172.17.173.97:9000/api/game/" + uuid_ai + "/last"
         r = requests.get(
@@ -2182,7 +2211,7 @@ def ai_pk_ai():
         cards_in_hand.append(Stack())  # 初始化手牌，0~3是A的手牌，4~7是B的手牌
 
     # 记牌器
-    def show():
+    '''def show():
         # 显示牌数
         font = pygame.font.SysFont('microsoft Yahei', 30)
         screen.blit(background, (0, 0))  # 插入背景
@@ -2194,8 +2223,15 @@ def ai_pk_ai():
             card_num = font.render(str(placement_area_recorder[placement_area_recorder_i]), False, (255, 255, 255))
             screen.blit(card_num, (791 + 60, 270 + 47 * placement_area_recorder_i + 12))
         # 刷新屏幕
-        pygame.display.flip()
+        pygame.display.flip()'''
     num_deck = 52
+    while (1):
+        wait_p2 = get_last()['code']
+        time.sleep(1)
+        if wait_p2 ==200:
+            break
+
+
     if get_last()['data']['your_turn'] == False:
         turn =1
     while num_deck != 0:
@@ -2219,18 +2255,20 @@ def ai_pk_ai():
             ai_answer = p_ai(now_info)
         if turn == 1:
             p2_code=get_last()
-            while not p2_code['data']['your_turn'] :
+            while(1) :
+                if p2_code['data']['your_turn'] == True:
+                    break
                 p2_code = get_last()
             if p2_code['data']['last_code'][2] == 0:
                 ai_answer == 4
             else:
                 if p2_code['data']['last_code'][4] == 'S':
                     ai_answer = 0
-                if p2_code['data']['last_code'][4] == 'S':
+                if p2_code['data']['last_code'][4] == 'H':
                     ai_answer = 1
-                if p2_code['data']['last_code'][4] == 'S':
+                if p2_code['data']['last_code'][4] == 'C':
                     ai_answer = 2
-                if p2_code['data']['last_code'][4] == 'S':
+                if p2_code['data']['last_code'][4] == 'D':
                     ai_answer = 3
         if ai_answer == 4:
             print('动作：{}从牌堆抽牌'.format(1+turn))
@@ -2290,6 +2328,7 @@ def ai_pk_ai():
                 turn = 0
             else:
                 turn = 1
+            num_deck = num_deck - 1
 
         else:
             # AI从手牌出牌
