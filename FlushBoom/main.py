@@ -2221,19 +2221,28 @@ def ai_pk_ai():
         cards_in_hand.append(Stack())  # 初始化手牌，0~3是A的手牌，4~7是B的手牌
 
     # 记牌器
-    '''def show():
+    def show():
         # 显示牌数
         font = pygame.font.SysFont('microsoft Yahei', 30)
         screen.blit(background, (0, 0))  # 插入背景
         # 显示牌堆牌数
-        for deck_recorder_i in range(0, 4):
-            card_num = font.render(str(deck_recorder[deck_recorder_i]), False, (255, 255, 255))
-            screen.blit(card_num, (198 + 60, 270 + 47 * deck_recorder_i + 12))
-        for placement_area_recorder_i in range(0, 4):
-            card_num = font.render(str(placement_area_recorder[placement_area_recorder_i]), False, (255, 255, 255))
-            screen.blit(card_num, (791 + 60, 270 + 47 * placement_area_recorder_i + 12))
+        url = "http://172.17.173.97:9000/api/game/" + uuid_ai
+        r = requests.get(
+            url=url,
+            data=json.dumps(datas),
+            headers=headers
+        )
+        print(r)
+        print(r.json())
+        if r.json()['data']['winner'] == '0':
+            winner = '1P'
+        else:
+            winner = '2P'
+        winner_H = font.render(winner, False, (255, 255, 255))
+        screen.blit(winner_H, (467, 248))
+
         # 刷新屏幕
-        pygame.display.flip()'''
+        pygame.display.flip()
     num_deck = 52
     while (1):
         wait_p2 = get_last()['code']
@@ -2304,8 +2313,6 @@ def ai_pk_ai():
             if num_string == 'K':
                 num_string = "13"
             random_num = mark * 13 + int(num_string) - 1
-            pygame.display.flip()  # 刷新屏幕
-            time.sleep(0.4)
             # 牌堆抽牌，牌堆记牌器变化
             deck_recorder[type_to_int(cards[deck[random_num]].card_type)] -= 1
             if (not placement_area.is_empty()) \
@@ -2324,14 +2331,12 @@ def ai_pk_ai():
                     elif placement_area.peek().card_type == 'D':
                         cards_in_hand[turn * 4 + 3].push(placement_area.peek())
                     placement_area.pop()
-                time.sleep(0.5)
             else:
                 print('事件：不是同花')
                 # 不是同花，更新放置区记牌器
                 placement_area_recorder[type_to_int(cards[deck[random_num]].card_type)] += 1
                 placement_area.push(cards[deck[random_num]])
                 del deck[random_num]
-                time.sleep(0.5)
             print('事件：轮换')
             if turn == 1:
                 turn = 0
@@ -2345,7 +2350,7 @@ def ai_pk_ai():
             if ai_answer == 0:
                 if cards_in_hand[turn * 4 + 0].is_empty():
                     continue
-                print('动作：AI从【手牌】抽牌，【黑桃】')
+                print('动作：AI{}从【手牌】抽牌，【黑桃】'.format(turn+1))
                 temp_type = 'S'
                 if turn == 0:
                     player_do(1, temp_type + value_change(cards_in_hand[turn * 4 + 0].peek().card_value))
@@ -2422,7 +2427,7 @@ def ai_pk_ai():
                 turn = 0
             else:
                 turn = 1
-
+    #show()
     a_score = 0
     b_score = 0
     for type_i in range(0, 4):
